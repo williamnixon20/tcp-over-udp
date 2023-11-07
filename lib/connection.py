@@ -68,15 +68,14 @@ if __name__ == "__main__":
     receiver_handler = ReceiverHandler()
     connection_b.register_handler(receiver_handler)
 
-    # Thread to start listening for Program A
     def program_a_listener():
         connection_a.listen()
 
-    # Thread to start listening for Program B
+
     def program_b_listener():
         connection_b.listen()
 
-    # Start listening for both Program A and Program B
+
     thread_a = threading.Thread(target=program_a_listener)
     thread_b = threading.Thread(target=program_b_listener)
 
