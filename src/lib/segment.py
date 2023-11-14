@@ -39,21 +39,21 @@ class Segment:
         if len(self.data_payload) > self.MAX_PAYLOAD_SIZE:
           raise ValueError(f"Data payload size exceeds the maximum allowed size of {self.MAX_PAYLOAD_SIZE} bytes.")
         
-        # TODO: Do we pad or not? if not pad hati2 CRC dkk
-        if len(data_payload) < self.MAX_PAYLOAD_SIZE:
-            padding_size = self.MAX_PAYLOAD_SIZE - len(data_payload)
-            self.data_payload += b'\x00' * padding_size
+        # # TODO: Do we pad or not? if not pad hati2 CRC dkk
+        # if len(data_payload) < self.MAX_PAYLOAD_SIZE:
+        #     padding_size = self.MAX_PAYLOAD_SIZE - len(data_payload)
+        #     self.data_payload += b'\x00' * padding_size
 
     def __str__(self):
         output = ""
-        output += f"{'SeqNum':12}\t\t| {self.sequence_number}\n"
-        output += f"{'AckNum':12}\t\t| {self.acknowledgment_number}\n"
-        output += f"{'FlagSYN':12}\t\t| {bool(self.flags & SegmentFlag.SYN_CONST)}\n"
-        output += f"{'FlagACK':12}\t\t| {bool(self.flags & SegmentFlag.ACK_CONST)}\n"
-        output += f"{'FlagFIN':12}\t\t| {bool(self.flags & SegmentFlag.FIN_CONST)}\n"
-        output += f"{'Checksum':24}| {self.checksum}\n"
-        output += f"{'MsgSize':24}| {len(self.data_payload)}\n"
-        output += f"{'Valid Checksum':24}| {self.is_valid_checksum()}\n"
+        output += "Sequence Num:          | " + str(self.sequence_number) + "\n"
+        output += "Acknowledgement Num:          | " + str(self.acknowledgment_number) + "\n"
+        output += "SYN:         | " + str(bool(self.flags & SegmentFlag.SYN_CONST)) + "\n"
+        output += "ACK:         | " + str(bool(self.flags & SegmentFlag.ACK_CONST)) + "\n"
+        output += "FIN:         | " + str(bool(self.flags & SegmentFlag.FIN_CONST)) + "\n"
+        output += "Checksum:        | " + str(self.checksum) + "\n"
+        output += "MsgSize:         | " + str(len(self.data_payload)) + "\n"
+        output += "Valid Checksum:  | " + str(self.is_valid_checksum()) + "\n"
         return output
 
     def to_bytes(self):
@@ -61,10 +61,12 @@ class Segment:
         header = struct.pack(self.endian + self.FORMAT_STRING, self.sequence_number, self.acknowledgment_number, self.flags, self.checksum)
         return header + self.data_payload
 
-    ## TODO: Pastiin ini bener (?) ini supposedly pake yg 16 bit 1's complement
     def calculate_checksum(self):
         # Bikin segment data dari awal, tapi checksumnya 0
         segment_data = struct.pack(self.endian + self.FORMAT_STRING, self.sequence_number, self.acknowledgment_number, self.flags, 0) + self.data_payload
+        # genap only kalo engga pad
+        if len(segment_data) % 2 != 0:
+            segment_data += b'\x00'
         checksum = sum(((segment_data[i] << 8) + segment_data[i + 1]) for i in range(0, len(segment_data), 2))
         while (checksum >> 16):
             checksum = (checksum & 0xFFFF) + (checksum >> 16)
@@ -97,6 +99,15 @@ class Segment:
     @staticmethod
     def fin():
         return Segment(flags=SegmentFlag(fin=True))
+    
+    def is_syn(self):
+        return bool(self.flags & SegmentFlag.SYN_CONST)
+    
+    def is_ack(self):
+        return bool(self.flags & SegmentFlag.ACK_CONST)
+    
+    def is_fin(self):
+        return bool(self.flags & SegmentFlag.FIN_CONST)
 
 
 ## CHECKSUM BAKAL DIKALKULASI KALAU TO_BYTES DIPANGGIL
@@ -104,7 +115,7 @@ if __name__ == "__main__":
     sequence_number = 12345
     acknowledgment_number = 54321
     flags = SegmentFlag(syn=True, ack=True)
-    data_payload = b'\x01' * 32756 
+    data_payload = b'\x01' 
 
     segment = Segment(sequence_number, acknowledgment_number, flags, 0, data_payload)
     packed_data = segment.to_bytes()
@@ -115,7 +126,7 @@ if __name__ == "__main__":
 
     corrupted_data = packed_data[:-2] + b'\x00\x01'  # Corrupting the checksum
     corrupted_segment = Segment.from_bytes(corrupted_data)
-    print("CORRUPTED SEGMENT\n" + corrupted_segment)
+    print("CORRUPTED SEGMENT\n" + str(corrupted_segment))
 
 
     syn_segment = Segment.syn(12345) 

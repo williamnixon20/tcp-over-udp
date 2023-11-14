@@ -1,4 +1,6 @@
-Buat tiap library di lib, harap kasih test case di __main__.
+# Kalau di mac, ada OS Error UDP terlalu gede. 
+# Fix pake ini sudo sysctl -w net.inet.udp.maxdgram=65535
+# Kalo komputer di reboot ga bs lagi, jadi harus di run lagi
 
 Progress:
 1. Segment (Done)
