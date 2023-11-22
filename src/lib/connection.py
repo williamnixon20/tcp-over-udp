@@ -1,6 +1,7 @@
 import socket
-from lib.segment import Segment, SegmentFlag 
+from lib.segment import Segment, SegmentFlag
 import threading
+
 
 class Connection:
     def __init__(self, ip="localhost", port=0):
@@ -13,21 +14,22 @@ class Connection:
     def send(self, ip, port, segment):
         dest = (ip, port)
         self.socket.sendto(segment.to_bytes(), dest)
-        print(f"[Segment SEQ={segment.sequence_number}] Sent to {ip}:{port}")
 
     def listen(self, timeout=None):
         self.socket.settimeout(timeout)
         try:
-            data, address = self.socket.recvfrom(1024)
-            message_info = MessageInfo(ip=address[0], port=address[1], segment=Segment.from_bytes(data))
+            data, address = self.socket.recvfrom(Segment.MAX_PAYLOAD_SIZE*2)
+            message_info = MessageInfo(
+                ip=address[0], port=address[1], segment=Segment.from_bytes(data))
             return message_info
         except socket.timeout:
             raise e
         except Exception as e:
-            raise e    
+            raise e
 
     def close(self):
         self.socket.close()
+
 
 class MessageInfo:
     def __init__(self, ip, port, segment):
