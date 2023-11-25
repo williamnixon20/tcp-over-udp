@@ -22,7 +22,7 @@ class Connection:
             message_info = MessageInfo(
                 ip=address[0], port=address[1], segment=Segment.from_bytes(data))
             return message_info
-        except socket.timeout:
+        except socket.timeout as e:
             raise e
         except Exception as e:
             raise e
