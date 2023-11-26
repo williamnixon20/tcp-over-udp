@@ -143,8 +143,10 @@ class Node(ABC):
                     )
                     break
         
-        while True:
+        tries = 3
+        while True and tries != 0:
             try:
+                tries -= 1
                 fin_segment = Segment.fin()
                 fin_segment.sequence_number = -1
                 self.connection.send(dest_address[0], dest_address[1], fin_segment)
@@ -167,6 +169,8 @@ class Node(ABC):
                 print(
                     f"[!] [Dest. Node {dest_address}] [Error] Timeout waiting for ACK after FIN. Retrying..."
                 )
+        if tries == 0:
+            print("Ack was never received. Terminating..")
 
     def receive(
         self,
