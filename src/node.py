@@ -149,6 +149,7 @@ class Node(ABC):
                 tries -= 1
                 fin_segment = Segment.fin()
                 fin_segment.sequence_number = -1
+                fin_segment.acknowledgment_number = -1
                 self.connection.send(dest_address[0], dest_address[1], fin_segment)
                 print(
                     f"[!] [Dest. Node {dest_address}] [CLS] Data transfer completed, initiating closing connection..."
@@ -197,7 +198,7 @@ class Node(ABC):
                         )
                     )
                     ack_segment = Segment.ack(
-                        expected_sequence_number, received_segment.sequence_number
+                        received_segment.sequence_number, received_segment.sequence_number
                     )
                     self.connection.send(
                         message_info.ip, message_info.port, ack_segment
