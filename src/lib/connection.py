@@ -13,14 +13,17 @@ class Connection:
 
     def send(self, ip, port, segment):
         dest = (ip, port)
-        self.socket.sendto(segment.to_bytes(), dest)
+        segment_bytes = segment.to_bytes()
+        self.socket.sendto(segment_bytes, dest)
 
     def listen(self, timeout=None):
         self.socket.settimeout(timeout)
         try:
-            data, address = self.socket.recvfrom(Segment.MAX_PAYLOAD_SIZE*2)
+            data, address = self.socket.recvfrom(int(Segment.MAX_PAYLOAD_SIZE * 2.5))
+            segment_received = Segment.from_bytes(data)
             message_info = MessageInfo(
-                ip=address[0], port=address[1], segment=Segment.from_bytes(data))
+                ip=address[0], port=address[1], segment=segment_received
+            )
             return message_info
         except socket.timeout as e:
             raise e

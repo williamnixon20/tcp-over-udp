@@ -25,6 +25,7 @@ class Server(Node):
                         break
 
             except Exception as e:
+                print(e)
                 print("[!] Error while listening for clients:", e)
 
         print("\nClient list:")

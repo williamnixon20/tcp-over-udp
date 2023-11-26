@@ -12,14 +12,13 @@ class TicTacToeClient(Node):
         self.server_address = (self.server_ip, self.server_port)
 
     def start(self):
-        self.initiate_handshake(self.server_port)
+        self.initiate_handshake(self.server_ip, self.server_port)
         while True:
             self.receive_state()
 
     def receive(self, timeout=0.1):
         data = json.loads(super().receive(timeout).decode("utf-8"))
-        print(
-            f"[!] Received data from {self.server_address}")
+        print(f"[!] Received data from {self.server_address}")
         return data
 
     def receive_state(self):
@@ -35,7 +34,7 @@ class TicTacToeClient(Node):
         print(f"Current player: {data['current_player_symbol']}")
         print(f"Is current player: {data['is_current_player']}\n")
 
-        if data['is_current_player']:
+        if data["is_current_player"]:
             self.send_move()
         else:
             print(f"Waiting for other player to move...\n")
@@ -55,7 +54,7 @@ class TicTacToeClient(Node):
         move = input("[?] Enter move (30s): ")
         print()
 
-        self.send(self.server_address, move.encode('utf-8'))
+        self.send(self.server_address, move.encode("utf-8"))
         print(f"[!] Sent move {move} to {self.server_address}.")
         self.receive_state()
 
@@ -63,7 +62,8 @@ class TicTacToeClient(Node):
 if __name__ == "__main__":
     if len(sys.argv) != 4:
         print(
-            "Usage: python3 tic_tac_toe_client.py [client port] [server ip] [server port]")
+            "Usage: python3 tic_tac_toe_client.py [client port] [server ip] [server port]"
+        )
         sys.exit(1)
 
     client_port, server_ip, server_port = sys.argv[1], sys.argv[2], sys.argv[3]

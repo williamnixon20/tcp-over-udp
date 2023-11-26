@@ -21,7 +21,7 @@ class Client(Node):
         print(f"[!] Client started at localhost:{self.node_port}")
         print("[!] Initiating three-way handshake...")
 
-        self.initiate_handshake(self.server_port)
+        self.initiate_handshake("localhost", self.server_port)
         self.receive_file()
         print("[!] Successfully received all data. Closing connection.")
         self.connection.close()

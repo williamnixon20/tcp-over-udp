@@ -18,6 +18,7 @@ def bits_to_bytes(bits_list):
 # hamming, turn 4 bits -> 8 bits.
 # 1 last parity bit
 def hamming_encode(data):
+    # print("Data for hamming: " + str(data))
     if type(data) is not bytes:
         raise ValueError("Input must be a bytes object")
 
@@ -78,7 +79,6 @@ def hamming_decode(data):
     for byte in data:
         byte_value = int.from_bytes(bytes([byte]), byteorder="big")
         data_bits = format(byte_value, "08b")
-        print("Processing bit: " + data_bits)
 
         # # Calculate syndrome bits
         s1 = (
@@ -104,14 +104,13 @@ def hamming_decode(data):
 
         # Correct errors if any
         if error_position > 0:
-            print("[!] Hamming detected errors! Trying to fix...")
+            print("[!] Hamming detected errors! Trying my best to fix...")
             data_bits = list(data_bits)
 
             data_bits[error_position - 1] = (
                 "0" if data_bits[error_position - 1] == "1" else "1"
             )
             data_bits = "".join(data_bits)
-            print("Error corrected.")
 
         # Append the correct 4 data bits to the decoded_bits
         decoded_bits.extend(
@@ -143,7 +142,7 @@ def simulate_bit_corruption(data, position):
 
 
 if __name__ == "__main__":
-    input_data = b"h"
+    input_data = b"a\n"
     print(input_data)
 
     # for byte in input_data:
@@ -157,6 +156,7 @@ if __name__ == "__main__":
         byte_value = int.from_bytes(bytes([byte]), byteorder="big")
         data_bits = format(byte_value, "08b")
         print(data_bits)
+    print("Encoded Data:", encoded_data)
 
     decoded_data = hamming_decode(encoded_data)
     print("Decoded Data:", decoded_data)
