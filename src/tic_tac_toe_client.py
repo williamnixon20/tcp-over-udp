@@ -17,11 +17,16 @@ class TicTacToeClient(Node):
             self.receive_state()
 
     def receive(self, timeout=0.1):
-        data = json.loads(
-            super()
-            .receive([self.server_ip, self.server_port], timeout=timeout)
-            .decode("utf-8")
-        )
+        try:
+            data = json.loads(
+                super()
+                .receive([self.server_ip, self.server_port], timeout=timeout, n_resend_ack=2)
+                .decode("utf-8")
+            )
+        except Exception as e:
+            print(e)
+            print("Oops, something went wrong (?) Trying to continue...")
+            return
         print(f"[!] Received data from {self.server_address}")
         return data
 

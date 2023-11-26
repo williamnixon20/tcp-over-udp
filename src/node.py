@@ -25,7 +25,7 @@ class Node(ABC):
         print("[!] [Handshake] Sending broadcast SYN request to ", dest_ip, dest_port)
 
         try:
-            message_info: MessageInfo = self.connection.listen(timeout=60)
+            message_info: MessageInfo = self.connection.listen(timeout=180)
             received_segment = message_info.segment
             if (
                 received_segment.is_syn()
@@ -96,10 +96,10 @@ class Node(ABC):
                 )
             # make this range = 1 if you need faster transfer
             # max_seq = min(window_size, total_segments - sequence_base)
-            max_seq = 2
+            max_seq = 3
             for i in range(max_seq):
                 try:
-                    message_info = self.connection.listen(timeout=1)
+                    message_info = self.connection.listen(timeout=0.2)
                     received_segment = message_info.segment
                     if not received_segment.is_valid_checksum():
                         print(
@@ -143,7 +143,7 @@ class Node(ABC):
                     )
                     break
         
-        tries = 3
+        tries = 5
         while True and tries != 0:
             try:
                 tries -= 1
@@ -154,7 +154,7 @@ class Node(ABC):
                 print(
                     f"[!] [Dest. Node {dest_address}] [CLS] Data transfer completed, initiating closing connection..."
                 )
-                message_info = self.connection.listen(timeout=15)
+                message_info = self.connection.listen(timeout=2)
                 received_segment = message_info.segment
 
                 if received_segment.is_ack() and received_segment.sequence_number == -1:
@@ -177,6 +177,7 @@ class Node(ABC):
         self,
         from_address,
         timeout=1,
+        n_resend_ack = 20
     ):
         expected_sequence_number = 0
         received_data = b""
@@ -232,7 +233,7 @@ class Node(ABC):
                         )
                     )
                     error_count += 1
-                    if error_count > 20:
+                    if error_count > n_resend_ack:
                         error_count = 0
                         print(
                             "[!] Received too much invalid segments! Maybe Ack was lost. Resending ACK... {} to {}:{}".format(

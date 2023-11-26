@@ -32,7 +32,7 @@ class TicTacToeServer(Node):
 
     def receive_move(self, player):
         print()
-        received_data = self.receive([player.ip, player.port], 30)
+        received_data = self.receive([player.ip, player.port], 30, n_resend_ack=2)
         print()
         move = received_data.decode("utf-8")
         return move
