@@ -11,6 +11,18 @@ sudo python3 src/server.py 123 test/18mb.jpg
 nyalain klien
 sudo python src/client.py 100 123 tesmee
 
+game tic tac toe:
+1. Jalankan server tic tac toe
+```
+sudo python3 src/tic_tac_toe_server.py 123
+```
+2. Jalankan 2 client (player)
+```
+sudo python3 src/tic_tac_toe_client.py 100 127.0.0.1 123
+
+sudo python3 src/tic_tac_toe_client.py 110 127.0.0.1 123
+```
+
 linux unstable network
 
 $ tc qdisc add dev lo root netem delay 100ms 50ms reorder 8% corrupt 5% duplicate 2% 5% loss 5%
