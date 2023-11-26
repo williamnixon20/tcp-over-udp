@@ -71,7 +71,7 @@ class Node(ABC):
 
     def send(self, dest_address, data):
         sequence_base = 0
-        window_size = 5
+        window_size = 4
         total_segments = math.ceil(len(data) / Segment.MAX_PAYLOAD_SIZE)
         print(
             f"[!] [DATA SIZE] Sending {total_segments} segments to source. Bytes: {len(data)}..."
@@ -99,7 +99,7 @@ class Node(ABC):
             max_seq = 2
             for i in range(max_seq):
                 try:
-                    message_info = self.connection.listen(timeout=0.3)
+                    message_info = self.connection.listen(timeout=1)
                     received_segment = message_info.segment
                     if not received_segment.is_valid_checksum():
                         print(
@@ -142,29 +142,31 @@ class Node(ABC):
                         f"[!] [Dest. Node {dest_address}] [Timeout] ACK response timeout, resending segments..."
                     )
                     break
-
-        fin_segment = Segment.fin()
-        self.connection.send(dest_address[0], dest_address[1], fin_segment)
-        print(
-            f"[!] [Dest. Node {dest_address}] [CLS] Data transfer completed, initiating closing connection..."
-        )
-
-        try:
-            message_info = self.connection.listen(timeout=15)
-            received_segment = message_info.segment
-
-            if received_segment.is_ack():
+        
+        while True:
+            try:
+                fin_segment = Segment.fin()
+                fin_segment.sequence_number = -1
+                self.connection.send(dest_address[0], dest_address[1], fin_segment)
                 print(
-                    f"[!] [Dest. Node {dest_address}] [ACK] ACK received for FIN. Closing connection..."
+                    f"[!] [Dest. Node {dest_address}] [CLS] Data transfer completed, initiating closing connection..."
                 )
-            else:
+                message_info = self.connection.listen(timeout=15)
+                received_segment = message_info.segment
+
+                if received_segment.is_ack() and received_segment.sequence_number == -1:
+                    print(
+                        f"[!] [Dest. Node {dest_address}] [ACK] ACK received for FIN. Closing connection..."
+                    )
+                    break
+                else:
+                    print(
+                        f"[!] [Dest. Node {dest_address}] [Error] Invalid ACK received for FIN. Retrying..."
+                    )
+            except Exception as e:
                 print(
-                    f"[!] [Dest. Node {dest_address}] [Error] Invalid ACK received for FIN. Closing connection..."
+                    f"[!] [Dest. Node {dest_address}] [Error] Timeout waiting for ACK after FIN. Retrying..."
                 )
-        except Exception as e:
-            print(
-                f"[!] [Dest. Node {dest_address}] [Error] Timeout waiting for ACK after FIN. Closing connection..."
-            )
 
     def receive(
         self,
@@ -217,6 +219,7 @@ class Node(ABC):
                     )
 
                     expected_sequence_number += 1
+                    error_count = 0
                 else:
                     print(
                         "[Segment SEQ={}] Ignoring, invalid segment received. Expected SEQ={}".format(
@@ -224,11 +227,12 @@ class Node(ABC):
                         )
                     )
                     error_count += 1
-                    if error_count > 50:
+                    if error_count > 20:
                         error_count = 0
                         print(
-                            "[!] Received too much invalid segments! Maybe Ack was lost. Resending ACK..={}".format(
-                                expected_sequence_number - 1
+                            "[!] Received too much invalid segments! Maybe Ack was lost. Resending ACK... {} to {}:{}".format(
+                                expected_sequence_number - 1,
+                                message_info.ip, message_info.port
                             )
                         )
                         ack_segment = Segment.ack(
@@ -239,12 +243,12 @@ class Node(ABC):
                         )
 
             except Exception as e:
-                print("[!] Timeout waiting for segment. Retrying...")
+                print("[!] Timeout waiting for segment. Retrying by sending ack {}...".format(expected_sequence_number-1))
                 ack_segment = Segment.ack(
                     expected_sequence_number - 1, expected_sequence_number - 1
                 )
                 self.connection.send(
-                    self.from_address[0], self.from_address, ack_segment
+                    from_address[0], from_address[1], ack_segment
                 )
 
         return received_data
