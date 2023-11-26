@@ -17,7 +17,11 @@ class TicTacToeClient(Node):
             self.receive_state()
 
     def receive(self, timeout=0.1):
-        data = json.loads(super().receive(timeout).decode("utf-8"))
+        data = json.loads(
+            super()
+            .receive([self.server_ip, self.server_port], timeout=timeout)
+            .decode("utf-8")
+        )
         print(f"[!] Received data from {self.server_address}")
         return data
 

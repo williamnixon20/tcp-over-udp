@@ -61,11 +61,11 @@ class Node(ABC):
                 return True
             else:
                 print(
-                    f"[!] [Handshake] Invalid ACK received from source {source_address}. Closing connection..."
+                    f"[!] [Handshake] Invalid ACK received from source {source_address}. Closing connection with this client..."
                 )
         except:
             print(
-                f"[!] [Handshake] Timeout waiting for ACK from source {source_address}. Closing connection..."
+                f"[!] [Handshake] Timeout waiting for ACK from source {source_address}. Closing connection with this client..."
             )
         return False
 
@@ -166,9 +166,14 @@ class Node(ABC):
                 f"[!] [Dest. Node {dest_address}] [Error] Timeout waiting for ACK after FIN. Closing connection..."
             )
 
-    def receive(self, timeout=1):
+    def receive(
+        self,
+        from_address,
+        timeout=1,
+    ):
         expected_sequence_number = 0
         received_data = b""
+        error_count = 0
 
         while True:
             try:
@@ -218,16 +223,28 @@ class Node(ABC):
                             received_segment.sequence_number, expected_sequence_number
                         )
                     )
-                    ack_segment = Segment.ack(
-                        expected_sequence_number - 1, expected_sequence_number - 1
-                    )
-                    self.connection.send(self.dest_ip, self.dest_port, ack_segment)
+                    error_count += 1
+                    if error_count > 50:
+                        error_count = 0
+                        print(
+                            "[!] Received too much invalid segments! Maybe Ack was lost. Resending ACK..={}".format(
+                                expected_sequence_number - 1
+                            )
+                        )
+                        ack_segment = Segment.ack(
+                            expected_sequence_number - 1, expected_sequence_number - 1
+                        )
+                        self.connection.send(
+                            message_info.ip, message_info.port, ack_segment
+                        )
 
             except Exception as e:
                 print("[!] Timeout waiting for segment. Retrying...")
                 ack_segment = Segment.ack(
                     expected_sequence_number - 1, expected_sequence_number - 1
                 )
-                self.connection.send(self.dest_ip, self.dest_port, ack_segment)
+                self.connection.send(
+                    self.from_address[0], self.from_address, ack_segment
+                )
 
         return received_data

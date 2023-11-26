@@ -2,7 +2,7 @@ import struct
 
 from lib.hamming import hamming_decode, hamming_encode
 
-_ECC = True
+_ECC = False
 
 
 class SegmentFlag:

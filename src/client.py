@@ -9,7 +9,7 @@ class Client(Node):
         self.output_path = output_path
 
     def receive_file(self):
-        received_data = self.receive()
+        received_data = self.receive(["localhost", self.server_port])
         self.create_file(received_data)
 
     def create_file(self, received_data):
@@ -29,8 +29,7 @@ class Client(Node):
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        print(
-            "Usage: python3 client.py [client port] [broadcast port] [path output]")
+        print("Usage: python3 client.py [client port] [broadcast port] [path output]")
         print("sudo python3 server.py 123 client.py")
         sys.exit(1)
 

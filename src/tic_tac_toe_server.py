@@ -30,9 +30,9 @@ class TicTacToeServer(Node):
         for i, player in enumerate(self.players, start=1):
             print(f"{i}. {player[0]}:{player[1]}")
 
-    def receive_move(self):
+    def receive_move(self, player):
         print()
-        received_data = self.receive(30)
+        received_data = self.receive([player.ip, player.port], 30)
         print()
         move = received_data.decode("utf-8")
         return move
@@ -45,7 +45,8 @@ class TicTacToeServer(Node):
         print()
         current_player = self.tic_tac_toe.get_current_player()
         print(
-            f"[!] Sending state to {player.symbol} with address {player.ip}:{player.port}")
+            f"[!] Sending state to {player.symbol} with address {player.ip}:{player.port}"
+        )
         dict = self.tic_tac_toe.to_dict(player == current_player)
         dict["message"] = message
         self.send(
@@ -63,8 +64,7 @@ class TicTacToeServer(Node):
 
         print("\n=========== Game started ===========\n")
         for player in self.tic_tac_toe.players:
-            self.send_state(
-                player, "Game started. Your symbol: " + player.symbol)
+            self.send_state(player, "Game started. Your symbol: " + player.symbol)
         while True:
             current_player: Player = self.tic_tac_toe.get_current_player()
             print(f"Current player: {current_player.symbol}")
@@ -72,7 +72,7 @@ class TicTacToeServer(Node):
             self.tic_tac_toe.print_board()
 
             print("\nWaiting for move...")
-            move = self.receive_move()
+            move = self.receive_move(current_player)
             print(f"Received move: {move}")
 
             try:
@@ -83,39 +83,33 @@ class TicTacToeServer(Node):
                     print("> Move successful.")
                 else:
                     print("> Move unsuccessful.")
-                    self.send_state(
-                        current_player, "Invalid move. Please try again.")
+                    self.send_state(current_player, "Invalid move. Please try again.")
                     continue
 
                 if self.tic_tac_toe.check_winner(current_player.symbol):
                     self.tic_tac_toe.print_board()
                     print(f"> Player {current_player.symbol} wins!")
-                    self.send_state(
-                        current_player, "Congratulations! You win!")
+                    self.send_state(current_player, "Congratulations! You win!")
                     self.tic_tac_toe.switch_player()
                     self.send_state(
-                        self.tic_tac_toe.get_current_player(
-                        ), f"You Lose. Player {current_player.symbol} wins."
+                        self.tic_tac_toe.get_current_player(),
+                        f"You Lose. Player {current_player.symbol} wins.",
                     )
                     break
 
                 if self.tic_tac_toe.is_board_full():
                     self.tic_tac_toe.print_board()
                     print(f"> Game is a tie!")
-                    self.send_state(
-                        current_player, "Game is a tie!")
+                    self.send_state(current_player, "Game is a tie!")
                     self.tic_tac_toe.switch_player()
                     self.send_state(
-                        self.tic_tac_toe.get_current_player(
-                        ), "Game is a tie!"
+                        self.tic_tac_toe.get_current_player(), "Game is a tie!"
                     )
                     break
 
                 self.tic_tac_toe.switch_player()
-                self.send_state(
-                    current_player, "Move successful.")
-                self.send_state(
-                    self.tic_tac_toe.get_current_player(), "Your turn.")
+                self.send_state(current_player, "Move successful.")
+                self.send_state(self.tic_tac_toe.get_current_player(), "Your turn.")
             except Exception as e:
                 print("[!] Error while processing move:", e)
 
@@ -128,9 +122,7 @@ class TicTacToeServer(Node):
 
         for player_address in self.players:
             if self.respond_handshake(player_address):
-                print(
-                    f"[!] [Player {player_address}] Handshake complete."
-                )
+                print(f"[!] [Player {player_address}] Handshake complete.")
 
         self.start_game()
         self.connection.close()

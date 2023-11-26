@@ -54,7 +54,7 @@ class Server(Node):
                     f"[!] [Client {client_address}] Handshake complete. Starting file transfer.."
                 )
                 self.send_file(client_address)
-
+        print("[!] All clients served! Closing connection and shutting down")
         self.connection.close()
 
 
