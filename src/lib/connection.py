@@ -5,6 +5,9 @@ import threading
 
 class Connection:
     def __init__(self, ip="localhost", port=0):
+        print(socket.gethostbyname_ex(socket.gethostname())[-1])
+        if ip == "localhost":
+            ip = socket.gethostbyname_ex(socket.gethostname())[-1][-1]
         self.ip = ip
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -19,7 +22,8 @@ class Connection:
     def listen(self, timeout=None):
         self.socket.settimeout(timeout)
         try:
-            data, address = self.socket.recvfrom(int(Segment.MAX_PAYLOAD_SIZE * 2.5))
+            data, address = self.socket.recvfrom(
+                int(Segment.MAX_PAYLOAD_SIZE * 2.5))
             segment_received = Segment.from_bytes(data)
             message_info = MessageInfo(
                 ip=address[0], port=address[1], segment=segment_received
