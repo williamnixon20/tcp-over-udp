@@ -74,6 +74,7 @@ def hamming_decode(data):
         raise ValueError("Input must be a bytes object")
 
     decoded_bits = []
+    prompt = True
 
     # Iterate over each byte in the input data
     for byte in data:
@@ -104,7 +105,9 @@ def hamming_decode(data):
 
         # Correct errors if any
         if error_position > 0:
-            print("[!] Hamming detected errors! Trying my best to fix...")
+            if prompt:
+                print("[!] Hamming detected errors! Trying my best to fix...")
+                prompt=False
             data_bits = list(data_bits)
 
             data_bits[error_position - 1] = (

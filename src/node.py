@@ -1,7 +1,7 @@
 import math
 from lib.connection import Connection
 
-from lib.segment import Segment, SegmentFlag
+from lib.segment import _ECC, Segment, SegmentFlag
 
 from lib.connection import Connection, MessageInfo, Segment, SegmentFlag
 
@@ -177,7 +177,7 @@ class Node(ABC):
                     f"[!] [Dest. Node {dest_address}] [Error] Timeout waiting for ACK after FIN. Retrying..."
                 )
         if tries == 0:
-            print("Ack was never received. Terminating..")
+            print("Ack was never received. Finishing this client.")
 
     def receive(
         self,
@@ -195,8 +195,18 @@ class Node(ABC):
                 received_segment = message_info.segment
 
                 if not received_segment.is_valid_checksum():
-                    print("[!] Invalid checksum received. Retrying...")
-                    continue
+                    print("[!] Invalid checksum received.")
+                    if _ECC and received_segment.sequence_number == expected_sequence_number:
+                        print("[!] Invalid checksum in expected packet. Trying to restore...")
+                        received_segment.restore_payload()
+                        if received_segment.is_valid_checksum():
+                            print("Error restored succesfully!")
+                        else:
+                            print("Error restoration failed")
+                            continue
+                    else:
+                        continue
+
 
                 if received_segment.is_fin() and expected_sequence_number != 0:
                     print(

@@ -176,6 +176,11 @@ class Segment:
 
     def is_fin(self):
         return bool(self.flags & SegmentFlag.FIN_CONST)
+    
+    def restore_payload(self):
+        fixed_err = hamming_decode(self.data_payload)
+        self.payload = hamming_encode(fixed_err)
+        return
 
 
 # CHECKSUM BAKAL DIKALKULASI KALAU TO_BYTES DIPANGGIL
