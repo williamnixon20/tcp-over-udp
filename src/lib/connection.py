@@ -4,11 +4,8 @@ import threading
 
 
 class Connection:
-    def __init__(self, ip="localhost", port=0, expose_conn=False):
+    def __init__(self, ip="localhost", port=0):
         self.ip = ip
-        if expose_conn:
-            print("[!] Exposing connection to public...")
-            self.ip = socket.gethostbyname_ex(socket.gethostname())[-1][-1]
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind((self.ip, self.port))

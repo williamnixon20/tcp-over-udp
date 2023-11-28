@@ -9,10 +9,10 @@ from abc import ABC, abstractmethod
 
 
 class Node(ABC):
-    def __init__(self, node_port, expose_conn=False):
+    def __init__(self, node_port, host="localhost"):
         self.node_port = int(node_port)
         self.connection = Connection(
-            ip="localhost", port=self.node_port, expose_conn=expose_conn)
+            ip=host, port=self.node_port)
 
     @abstractmethod
     def start(self):

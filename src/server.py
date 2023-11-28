@@ -5,8 +5,8 @@ from node import Node
 
 
 class Server(Node):
-    def __init__(self, server_port, source_file, expose_conn=False):
-        super().__init__(server_port, expose_conn=expose_conn)
+    def __init__(self, server_port, source_file, host="localhost"):
+        super().__init__(server_port, host=host)
         self.source_file = source_file
         self.clients = []
 
@@ -61,10 +61,14 @@ class Server(Node):
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         print("Usage: python3 server.py [server port] [source file]")
-        print("Use flag --host to expose server to other devices on the network.")
+        print(
+            "Use flag -h=[your ip] to expose server to other devices on the network.")
         print("sudo python3 src/server.py 123 test/18mb.jpg")
         sys.exit(1)
 
     server_port, source_file = sys.argv[1], sys.argv[2]
-    server = Server(server_port, source_file, "--host" in sys.argv)
+    host = "localhost"
+    if len(sys.argv) == 4 and "-h" in sys.argv[3]:
+        host = sys.argv[3].split("=")[1]
+    server = Server(server_port, source_file, host)
     server.start()

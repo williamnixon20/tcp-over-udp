@@ -5,8 +5,8 @@ import json
 
 
 class TicTacToeServer(Node):
-    def __init__(self, server_port, expose_conn=False):
-        super().__init__(server_port, expose_conn=expose_conn)
+    def __init__(self, server_port, host="localhost"):
+        super().__init__(server_port, host=host)
         self.tic_tac_toe = TicTacToe()
         self.players = []
 
@@ -134,12 +134,15 @@ class TicTacToeServer(Node):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print("Usage: python3 server.py [server port]")
-        print("Use flag --host to expose server to other devices on the network.")
-        print("sudo python3 src/tic_tac_toe_server.py 243")
+        print(
+            "Use flag -h=[your ip] to expose server to other devices on the network.")
         sys.exit(1)
 
     server_port = sys.argv[1]
-    server = TicTacToeServer(server_port, "--host" in sys.argv)
+    host = "localhost"
+    if len(sys.argv) == 3 and "-h" in sys.argv[2]:
+        host = sys.argv[2].split("=")[1]
+    server = TicTacToeServer(server_port, host)
     server.start()
