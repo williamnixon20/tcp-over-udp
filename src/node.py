@@ -183,7 +183,7 @@ class Node(ABC):
         self,
         from_address,
         timeout=1,
-        n_resend_ack=20
+        n_resend_ack=10
     ):
         expected_sequence_number = 0
         received_data = b""
@@ -198,7 +198,7 @@ class Node(ABC):
                     print("[!] Invalid checksum received. Retrying...")
                     continue
 
-                if received_segment.is_fin():
+                if received_segment.is_fin() and expected_sequence_number != 0:
                     print(
                         "[Segment SEQ={}] Received FIN. Acking and closing connection.".format(
                             received_segment.sequence_number

@@ -20,7 +20,7 @@ class TicTacToeClient(Node):
         try:
             data = json.loads(
                 super()
-                .receive([self.server_ip, self.server_port], timeout=timeout, n_resend_ack=2)
+                .receive([self.server_ip, self.server_port], timeout=timeout, n_resend_ack=1)
                 .decode("utf-8")
             )
         except Exception as e:
