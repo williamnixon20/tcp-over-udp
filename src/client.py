@@ -3,8 +3,8 @@ from node import Node
 
 
 class Client(Node):
-    def __init__(self, client_port, server_host, server_port, output_path):
-        super().__init__(client_port)
+    def __init__(self, client_port, server_host, server_port, output_path, expose_conn=False):
+        super().__init__(client_port, expose_conn=expose_conn)
         self.server_host = server_host
         self.server_port = int(server_port)
         self.output_path = output_path
@@ -32,10 +32,12 @@ if __name__ == "__main__":
     if len(sys.argv) != 5:
         print(
             "Usage: python3 client.py [client port] [broadcast host] [broadcast port] [path output]")
+        print("Use flag --host to expose server to other devices on the network.")
         # print("sudo python3 server.py 123 client.py")
         sys.exit(1)
 
     client_port, server_host, server_port, output_path = sys.argv[
         1], sys.argv[2], sys.argv[3], sys.argv[4]
-    client = Client(client_port, server_host, server_port, output_path)
+    client = Client(client_port, server_host, server_port,
+                    output_path, "--host" in sys.argv)
     client.start()

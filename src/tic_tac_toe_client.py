@@ -5,8 +5,8 @@ import json
 
 
 class TicTacToeClient(Node):
-    def __init__(self, client_port, server_ip, server_port):
-        super().__init__(client_port)
+    def __init__(self, client_port, server_ip, server_port, expose_conn=False):
+        super().__init__(client_port, expose_conn=expose_conn)
         self.server_port = int(server_port)
         self.server_ip = server_ip
         self.server_address = (self.server_ip, self.server_port)
@@ -73,8 +73,11 @@ if __name__ == "__main__":
         print(
             "Usage: python3 tic_tac_toe_client.py [client port] [server ip] [server port]"
         )
+        print("Use flag --host to expose server to other devices on the network.")
+
         sys.exit(1)
 
     client_port, server_ip, server_port = sys.argv[1], sys.argv[2], sys.argv[3]
-    client = TicTacToeClient(client_port, server_ip, server_port)
+    client = TicTacToeClient(client_port, server_ip,
+                             server_port, "--host" in sys.argv)
     client.start()

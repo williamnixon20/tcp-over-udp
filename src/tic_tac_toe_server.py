@@ -5,8 +5,8 @@ import json
 
 
 class TicTacToeServer(Node):
-    def __init__(self, server_port):
-        super().__init__(server_port)
+    def __init__(self, server_port, expose_conn=False):
+        super().__init__(server_port, expose_conn=expose_conn)
         self.tic_tac_toe = TicTacToe()
         self.players = []
 
@@ -32,7 +32,8 @@ class TicTacToeServer(Node):
 
     def receive_move(self, player):
         print()
-        received_data = self.receive([player.ip, player.port], 30, n_resend_ack=2)
+        received_data = self.receive(
+            [player.ip, player.port], 30, n_resend_ack=2)
         print()
         move = received_data.decode("utf-8")
         return move
@@ -64,7 +65,8 @@ class TicTacToeServer(Node):
 
         print("\n=========== Game started ===========\n")
         for player in self.tic_tac_toe.players:
-            self.send_state(player, "Game started. Your symbol: " + player.symbol)
+            self.send_state(
+                player, "Game started. Your symbol: " + player.symbol)
         while True:
             current_player: Player = self.tic_tac_toe.get_current_player()
             print(f"Current player: {current_player.symbol}")
@@ -83,13 +85,15 @@ class TicTacToeServer(Node):
                     print("> Move successful.")
                 else:
                     print("> Move unsuccessful.")
-                    self.send_state(current_player, "Invalid move. Please try again.")
+                    self.send_state(
+                        current_player, "Invalid move. Please try again.")
                     continue
 
                 if self.tic_tac_toe.check_winner(current_player.symbol):
                     self.tic_tac_toe.print_board()
                     print(f"> Player {current_player.symbol} wins!")
-                    self.send_state(current_player, "Congratulations! You win!")
+                    self.send_state(
+                        current_player, "Congratulations! You win!")
                     self.tic_tac_toe.switch_player()
                     self.send_state(
                         self.tic_tac_toe.get_current_player(),
@@ -109,7 +113,8 @@ class TicTacToeServer(Node):
 
                 self.tic_tac_toe.switch_player()
                 self.send_state(current_player, "Move successful.")
-                self.send_state(self.tic_tac_toe.get_current_player(), "Your turn.")
+                self.send_state(
+                    self.tic_tac_toe.get_current_player(), "Your turn.")
             except Exception as e:
                 print("[!] Error while processing move:", e)
 
@@ -131,9 +136,10 @@ class TicTacToeServer(Node):
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python3 server.py [server port]")
+        print("Use flag --host to expose server to other devices on the network.")
         print("sudo python3 src/tic_tac_toe_server.py 243")
         sys.exit(1)
 
     server_port = sys.argv[1]
-    server = TicTacToeServer(server_port)
+    server = TicTacToeServer(server_port, "--host" in sys.argv)
     server.start()
