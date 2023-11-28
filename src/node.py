@@ -9,9 +9,10 @@ from abc import ABC, abstractmethod
 
 
 class Node(ABC):
-    def __init__(self, node_port):
+    def __init__(self, node_port, expose_conn=False):
         self.node_port = int(node_port)
-        self.connection = Connection(ip="localhost", port=self.node_port)
+        self.connection = Connection(
+            ip="localhost", port=self.node_port, expose_conn=expose_conn)
 
     @abstractmethod
     def start(self):
@@ -22,7 +23,8 @@ class Node(ABC):
         self.dest_port = dest_port
         syn_segment = Segment.syn(0)
         self.connection.send(dest_ip, dest_port, syn_segment)
-        print("[!] [Handshake] Sending broadcast SYN request to ", dest_ip, dest_port)
+        print("[!] [Handshake] Sending broadcast SYN request to ",
+              dest_ip, dest_port)
 
         try:
             message_info: MessageInfo = self.connection.listen(timeout=180)
@@ -36,7 +38,8 @@ class Node(ABC):
                     "[!] [Handshake] Received valid SYN-ACK response. Initiating ACK..."
                 )
                 ack_segment = Segment.ack(0, 0)
-                self.connection.send(message_info.ip, message_info.port, ack_segment)
+                self.connection.send(
+                    message_info.ip, message_info.port, ack_segment)
                 print("[!] [Handshake] Handshake complete.")
             else:
                 print("[!] [Handshake] Received invalid SYN-ACK response. Exiting...")
@@ -47,7 +50,8 @@ class Node(ABC):
 
     def respond_handshake(self, source_address):
         syn_ack_segment = Segment.syn_ack()
-        self.connection.send(source_address[0], source_address[1], syn_ack_segment)
+        self.connection.send(
+            source_address[0], source_address[1], syn_ack_segment)
         print(f"[!] [Handshake] Handshake to source {source_address}...")
 
         try:
@@ -76,7 +80,8 @@ class Node(ABC):
         print(
             f"[!] [DATA SIZE] Sending {total_segments} segments to source. Bytes: {len(data)}..."
         )
-        print(f"[!] [WINDOW SIZE] Sending {window_size} segments per window...")
+        print(
+            f"[!] [WINDOW SIZE] Sending {window_size} segments per window...")
 
         while sequence_base < total_segments:
             for sequence_number in range(
@@ -142,7 +147,7 @@ class Node(ABC):
                         f"[!] [Dest. Node {dest_address}] [Timeout] ACK response timeout, resending segments..."
                     )
                     break
-        
+
         tries = 5
         while True and tries != 0:
             try:
@@ -150,7 +155,8 @@ class Node(ABC):
                 fin_segment = Segment.fin()
                 fin_segment.sequence_number = -1
                 fin_segment.acknowledgment_number = -1
-                self.connection.send(dest_address[0], dest_address[1], fin_segment)
+                self.connection.send(
+                    dest_address[0], dest_address[1], fin_segment)
                 print(
                     f"[!] [Dest. Node {dest_address}] [CLS] Data transfer completed, initiating closing connection..."
                 )
@@ -177,7 +183,7 @@ class Node(ABC):
         self,
         from_address,
         timeout=1,
-        n_resend_ack = 20
+        n_resend_ack=20
     ):
         expected_sequence_number = 0
         received_data = b""
@@ -249,7 +255,8 @@ class Node(ABC):
                         )
 
             except Exception as e:
-                print("[!] Timeout waiting for segment. Retrying by sending ack {}...".format(expected_sequence_number-1))
+                print("[!] Timeout waiting for segment. Retrying by sending ack {}...".format(
+                    expected_sequence_number-1))
                 ack_segment = Segment.ack(
                     expected_sequence_number - 1, expected_sequence_number - 1
                 )
