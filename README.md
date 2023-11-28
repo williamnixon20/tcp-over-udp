@@ -47,6 +47,7 @@ Download clumsy.
 2. Connection (Done)
 3. Three Way Handshake (OK)
 4. File Transfer (OK)
-5. Tic tac toe (OK)
-6. ECC Hamming (OK)
+5. Tic tac toe (OK) -> Follow readme
+6. ECC Hamming (OK) -> Enable _ECC to True add Segment.py
+7. 2 Physical device 1 network (wifi) -> Follow readme
 Status: Done!
