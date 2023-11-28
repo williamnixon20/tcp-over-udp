@@ -18,10 +18,13 @@ sudo python3 src/tic_tac_toe_server.py 123
 ```
 2. Jalankan 2 client (player)
 ```
-sudo python3 src/tic_tac_toe_client.py 100 127.0.0.1 123
+sudo python3 src/tic_tac_toe_client.py 100 [server ip address] 123
 
-sudo python3 src/tic_tac_toe_client.py 110 127.0.0.1 123
+sudo python3 src/tic_tac_toe_client.py 110 [server ip address] 123
 ```
+
+Untuk menjalankan di 2 device
+1. Jalankan server dan client dengan flag `-h=[ip address dari device]` contoh: `-h=192.168.118.100`
 
 linux unstable network
 
